@@ -8,6 +8,12 @@
 }
 
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 130px;
+}
+
+
 *{
     font-family: "Outfit", sans-serif;
     scrollbar-width: thin;
@@ -20,3 +26,6 @@ body{
     background-color: #09090B;
 }
 
+.no-scrollbar{
+    scrollbar-width: none;
+}

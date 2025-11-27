@@ -654,3 +654,338 @@ const Home = () => {
 
 export default Home;
 ```
+
+<br/><br/>
+
+
+## Step 5 -
+- added Movies.jsx page
+- added MovieDetails.jsx page & DateSelect.jsx component
+- added Loading.jsx component
+- updated index.css
+
+<br/>
+
+- *added Movies.jsx page*
+
+pages/Movies.jsx
+
+```javascript
+import React from "react";
+import { dummyShowsData } from "../assets/assets";
+import MovieCard from "../components/MovieCard";
+import BlurCircle from "../components/BlurCircle";
+
+const Movies = () => {
+
+    return dummyShowsData.length > 0 ? (
+        
+        <div className="relative my-40 mb-60 px-6 md:px-16 lg:px-40 xl:px-44 overflow-hidden min-h-[80vh]">
+
+            <BlurCircle top="150px" left="0px" />
+            <BlurCircle bottom="50px" right="50px" />
+
+            <h1 className="text-lg font-medium my-4">Now Showing</h1>
+
+            <div className="flex flex-wrap max-sm:justify-center gap-8">
+                {dummyShowsData.map((movie)=>(
+                    <MovieCard movie={movie} key={movie._id} />
+                ))}
+            </div>
+
+        </div>
+    ) : (
+        <div className="flex flex-col items-center justify-center h-screen">
+            <h1 className="text-3xl font-bold text-center">No Movies Available</h1>
+        </div>
+    )
+}
+
+export default Movies;
+```
+
+<br/>
+
+
+- *added MovieDetails.jsx page & DateSelect.jsx component*
+
+
+pages/MovieDetails.jsx
+
+```javascript
+import { Heart, PlayCircleIcon, StarIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { dummyDateTimeData, dummyShowsData } from "../assets/assets";
+import BlurCircle from "../components/BlurCircle";
+import timeFormat from "../lib/TimeFormat";
+import DateSelect from "../components/DateSelect";
+import MovieCard from "../components/MovieCard";
+import Loading from "../components/Loading";
+
+
+
+
+const MovieDetails = () => {
+
+    const navigate = useNavigate()
+
+    const {id} = useParams()
+    const [show, setShow] = useState(null)
+
+    const getShow = async () => {
+
+        const show = dummyShowsData.find((show) => show._id === id)
+
+        if(show)
+        {
+            setShow({
+                movie: show,
+                dateTime: dummyDateTimeData
+            })
+        }
+        
+    }
+
+
+    useEffect(() => {
+        getShow()
+    },[id])
+
+
+    return  show ? (
+        <div className="px-6 md:px-16 lg:px-40 pt-30 md:pt-50">
+
+            <div className="flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
+
+                <img src={show.movie.poster_path} alt="IMG" className="max-md:mx-auto rounded-xl h-104 max-w-70 object-cover" />
+
+                <div className="relative flex flex-col gap-3">
+
+                    <BlurCircle top="-100px" left="-100px" />
+
+                    <p className="text-primary"> ENGLISH </p>
+
+                    <h1 className="text-4xl font-semibold max-w-96 text-balance"> {show.movie.title} </h1>
+
+                    <div className="flex items-center gap-2 text-gray-300">
+
+                        <StarIcon className="w-5 h-5 text-primary fill-primary" />
+
+                        {show.movie.vote_average.toFixed(1)} User Rating
+
+                    </div>
+
+                    <p className="text-gray-400 mt-2 text-sm leading-tight max-w-xl"> {show.movie.overview} </p>
+
+                    <p> {timeFormat(show.movie.runtime)} | {show.movie.genres.map(genre => genre.name).join(", ")} | {show.movie.release_date.split("-")[0]} </p>
+
+                    <div className="flex items-center flex-wrap gap-4 mt-4">
+
+                        <button className="flex items-center gap-2 px-7 py-3 text-sm bg-gray-800 hover:bg-gray-900 transition rounded-md font-medium cursor-pointer active:scale-95">
+                            <PlayCircleIcon className="w-5 h-5" />
+                            Watch Trailer
+                        </button>
+
+                        <a href="#dateSelect" className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull tansition rounded-md font-medium cursor-pointer active:scale-95">
+                            Buy Tickets
+                        </a>
+
+                        <button className="bg-gray-700 p-2.5 rounded-full transition cursor-pointer active:scale-95">
+                            <Heart className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div>
+                <p className="text-lg font-medium mt-20">Your Favourite Cast</p>
+
+                <div className="overflow-x-auto no-scrollbar mt-8 pb-4">
+                    <div className="flex items-center gap-4 w-max px-4">
+                        {show.movie.casts.slice(0,12).map((cast,index)=> (
+                            <div key={index} className="flex flex-col items-center text-center">
+                                <img src={cast.profile_path} className="rounded-full h-20 md:h-20 aspect-square object-cover" />
+                                <p className="font-medium text-xs mt-3">{cast.name}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+            <div>
+                <p className="text-lg font-medium mt-30">Book Tickets</p>
+
+                <DateSelect dateTime={show.dateTime} id={id} />
+            </div>
+
+
+
+            <div>
+                <p className="text-lg font-medium mt-30 mb-8">You May Also Like</p>
+
+                <div className="flex flex-wrap max-sm:justify-center gap-8">
+
+                    {dummyShowsData.slice(0,4).map((movie, index)=>(
+                        <MovieCard key={index} movie={movie} />
+                    ))}
+                </div>
+
+                <div className="flex justify-center mt-20">
+                    <button onClick={() => {navigate('/movies'); scrollTo(0,0)}} className="px-10 py-3 text-sm bg-primary hover:bg-primary-dull transition rounded-md font-medium cursor-pointer active:scale-95">
+                        Show More
+                    </button>
+                </div>
+            </div>
+
+
+            
+        </div>
+    ) : (
+        <Loading />
+    )
+}
+
+
+export default MovieDetails;
+```
+
+
+components/DateSelect.jsx
+
+```javascript
+import React, { useState } from "react"
+import BlurCircle from "./BlurCircle"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import toast from "react-hot-toast"
+import { useNavigate } from "react-router-dom"
+
+
+const DateSelect = ({dateTime, id}) => {
+
+    const navigate = useNavigate()
+    const [selected, setSelected] = useState(null)
+
+    const onBookHandler = () => {
+        if(!selected){
+            return toast('Please select a Date')
+        }
+        navigate(`/movies/${id}/${selected}`)
+        scrollTo(0,0)
+    }
+
+    
+    return (
+        <div id="dateSelect" className="pt-8">
+
+            <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative p-8 bg-primary/10 border border-primary/20 rounded-lg">
+                <BlurCircle top="-100px" left="-100px" />
+                <BlurCircle top="100px" right="0px" />
+
+                <div>
+                    <p className="text-lg font-semibold">Choose Date</p>
+                    <div className="flex items-center gap-6 text-sm mt-5">
+                        <ChevronLeftIcon width={28} />
+                        <span className="grid grid-cols-3 md:flex flex-wrap md:max-w-lg gap-4">
+                            {Object.keys(dateTime).map((date) => (
+                                <button onClick={() => {setSelected(date)}} key={date} className={`flex flex-col items-center justify-center h-14 w-14 aspect-square rounded cursor-pointer ${selected === date ? "bg-primary text-white" : "border border-primary/70"}`}>
+                                    <span>{new Date(date).getDate()}</span>
+                                    <span>{new Date().toLocaleDateString("en-US", {month:"short"})}</span>
+                                </button>
+                            ) )}
+                        </span>
+                        <ChevronRightIcon width={28} />
+                    </div>
+                </div>
+
+
+                <button onClick={onBookHandler} className="bg-primary text-white px-8 py-2 mt-6 rounded hover:bg-primary/90 transition-all cursor-pointer active:scale-95">Book Now</button>
+
+            </div>
+        </div>
+    )
+}
+
+export default DateSelect
+```
+
+<br/>
+
+
+- *added Loading.jsx component*
+
+components/Loading.jsx
+
+```javascript
+import React from "react";
+
+
+const Loading = () => {
+    return (
+        <div className="flex justify-center items-center h-[80vh]">
+
+            <div className="animate-spin rounded-full h-20 w-20 border-3 border-t-primary">
+            </div>
+
+        </div>
+    )
+}
+
+export default Loading
+```
+
+<br/>
+
+
+- *updated index.css*
+
+src/index.css
+
+```css
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
+@import "tailwindcss";
+
+
+@theme{
+    --color-primary: #F84565 ;
+    --color-primary-dull: #D63854 ;
+}
+
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 130px;
+}
+
+
+*{
+    font-family: "Outfit", sans-serif;
+    scrollbar-width: thin;
+    scrollbar-color: #787777 #1e1e1e;
+}
+
+
+body{
+    color: white;
+    background-color: #09090B;
+}
+
+.no-scrollbar{
+    scrollbar-width: none;
+}
+```
+
+
+
+<br/><br/>
+
+
+
+
+

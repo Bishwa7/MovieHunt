@@ -1,4 +1,6 @@
-# Frontend Steps - 
+# Frontend Steps -  (For Self reference for future use) 
+
+*Note - Frontend created using dummy Data later added backend* 
 
 
 ## Step 1 - 
@@ -1593,4 +1595,313 @@ export default App
 <br/><br/>
 
 
+
+
+## Step 9 -
+- created Title.jsx component for Admin
+- created Dashboard.jsx, ListShows.jsx & ListBookings.jsx
+
+
+<br/>
+
+
+- created Title.jsx component for Admin
+
+
+components/admin/Title.jsx
+
+```javascript
+import React from "react";
+
+const Title = ( {text1, text2} ) => {
+
+    return (
+        <h1 className="font-medium text-2xl">
+            {text1} <span className="underline text-primary">{text2}</span>
+        </h1>
+    )
+}
+
+export default Title
+```
+
+<br/>
+
+
+
+- created Dashboard.jsx, ListShows.jsx & ListBookings.jsx
+
+
+pages/admin/Dashboard.jsx
+
+```javascript
+import { ChartLineIcon, CircleDollarSignIcon, PlayCircleIcon, StarIcon, UsersIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { dummyDashboardData } from "../../assets/assets";
+import Loading from "../../components/Loading";
+import Title from "../../components/admin/Title";
+import BlurCircle from "../../components/BlurCircle";
+import dateFormat from "../../lib/dateFormat";
+
+
+const Dashboard = () => {
+
+    const currency = import.meta.env.VITE_CURRENCY
+
+    const [dashboardData, setDashboardData] = useState({
+        totalBookings: 0,
+        totalRevenue: 0,
+        activeShows: [],
+        totalUser: 0
+    })
+
+
+    const [loading, setLoading] = useState(true)
+
+    const dashboardCards = [
+        {title:"Total Bookings", value:dashboardData.totalBookings || "0", icon:ChartLineIcon },
+        {title:"Total Revenue", value: `${currency} ${dashboardData.totalRevenue}` || "0", icon:CircleDollarSignIcon },
+        {title:"Active Shows", value:dashboardData.activeShows.length || "0", icon:PlayCircleIcon },
+        {title:"Total Users", value:dashboardData.totalUser || "0", icon:UsersIcon }
+    ]
+
+
+
+    const fetchDashboardData = async () => {
+        setDashboardData(dummyDashboardData)
+        setLoading(false)
+    }
+
+
+    useEffect(() => {
+        fetchDashboardData()
+    },[])
+
+
+
+    return !loading ? (
+        <>
+            <Title text1="Admin" text2="Dashboard" />
+
+            <div className="relative flex flex-wrap gap-4 mt-6">
+                
+                <BlurCircle top="-100px" left="0" />
+
+                <div className="flex flex-wrap gap-4 w-full">
+                    {dashboardCards.map((card, index) => (
+                        <div key={index} className="flex items-center justify-between px-4 py-3 bg-primary/10 border border-primary/20 rounded-md max-w-50 w-full">
+                            <div>
+                                <h1 className="text-sm"> {card.title} </h1>
+                                <p className="text-xl font-medium mt-1"> {card.value} </p>
+                            </div>
+                            <card.icon className="w-6 h-6" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+
+            <p className="mt-10 text-lg font-medium">Active Shows</p>
+
+            <div className="relative flex flex-wrap gap-6 mt-4 max-w-5xl">
+
+                <BlurCircle top="100px" left="-10%" />
+
+                {dashboardData.activeShows.map((show) => (
+                    <div key={show._id} className="w-55 rounded-lg overflow-hidden h-full pb-3 bg-primary/10 border border-primary/20 hover:-translate-y-1 transition duration-300">
+                        <img src={show.movie.poster_path} alt="" className="h-60 w-full object-cover" />
+                        <p className="font-medium p-2 truncate">{show.movie.title}</p>
+
+                        <div className="flex items-center justify-between px-2">
+                            <p className="text-lg font-medium">{currency} {show.showPrice}</p>
+
+                            <p className="flex items-center gap-1 text-sm text-gray-400 mt-1 pr-1">
+                                <StarIcon className="w-4 h-4 text-primary fill-primary" /> 
+                                {show.movie.vote_average.toFixed(1)}
+                            </p>
+                        </div>
+                        <p className="px-2 pt-2 text-sm text-gray-500">{dateFormat(show.showDateTime)}</p>
+                    </div>
+                ))}
+            </div>
+        </>
+    ) : (
+        <Loading />
+    )
+}
+
+
+export default Dashboard
+```
+
+<br/>
+
+
+pages/admin/ListShows.jsx
+
+```javascript
+import React, { useEffect, useState } from "react";
+import { dummyShowsData } from "../../assets/assets";
+import Title from "../../components/admin/Title";
+import Loading from "../../components/Loading";
+import dateFormat from "../../lib/dateFormat";
+
+
+const ListShows = () => {
+
+    const currency = import.meta.env.VITE_CURRENCY
+
+    const [shows,setShows] = useState([])
+    const [loading, setLoading] = useState(true)
+
+
+
+    const getAllShows = async () => {
+        
+        try{
+            setShows([{
+                movie: dummyShowsData[0],
+                showDateTime: "2025-12-06T02:30:00.000Z",
+                showPrice: 59,
+                occupiedSeats: {
+                    A1: "user_1",
+                    B1: "user_2",
+                    C1: "user_3"
+                }
+            },{
+                movie: dummyShowsData[1],
+                showDateTime: "2025-12-06T02:30:00.000Z",
+                showPrice: 81,
+                occupiedSeats: {
+                    A1: "user_4",
+                    B1: "user_5",
+                    C1: "user_5"
+                }
+            }])
+            setLoading(false)
+        }
+        catch(err)
+        {
+            console.error(err)
+        }
+    }
+
+
+    useEffect(() => {
+        getAllShows()
+    },[])
+
+    
+
+    return !loading ? (
+        <>
+            <Title text1="List" text2="Shows" />
+
+            <div className="max-w-4xl mt-6 overflow-x-auto">
+
+                <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
+                    <thead>
+                        <tr className="bg-primary/20 text-left text-white">
+                            <th className="p-2 font-medium pl-5">Movie Name</th>
+                            <th className="p-2 font-medium">Show Time</th>
+                            <th className="p-2 font-medium">Total Bookings</th>
+                            <th className="p-2 font-medium">Earnings</th>
+                        </tr>
+                    </thead>
+
+                    <tbody className="text-sm font-light">
+                        {shows.map((show, index) => (
+                            <tr key={index} className="border-b border-primary/20 bg-primary/5 even:bg-primary/10">
+                                <td className="p-2 min-w-45 pl-5"> {show.movie.title} </td>
+                                <td className="p-2"> {dateFormat(show.showDateTime)} </td>
+                                <td className="p-2"> {Object.keys(show.occupiedSeats).length} </td>
+                                <td className="p-2"> {currency} {Object.keys(show.occupiedSeats).length * show.showPrice} </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
+    ) : (
+        <Loading />
+    )
+}
+
+
+export default ListShows
+```
+
+<br/>
+
+
+pages/admin/ListBookings.jsx
+
+```javascript
+import React, { useEffect, useState } from "react";
+import { dummyBookingData } from "../../assets/assets";
+import Title from "../../components/admin/Title";
+import Loading from "../../components/Loading";
+import dateFormat from "../../lib/dateFormat";
+
+
+const ListBookings = () => {
+
+    const currency = import.meta.env.VITE_CURRENCY
+
+    const [bookings, setBookings] = useState([])
+    const [loading, setLoading] = useState(true)
+
+
+    const getAllBookings = async () => {
+        setBookings(dummyBookingData)
+        setLoading(false)
+    }
+
+
+    useEffect(() => {
+        getAllBookings()
+    },[])
+
+
+    return !loading ? (
+        <>
+            <Title text1="List" text2="Bookings" />
+
+            <div className="max-w-4xl mt-6 overflow-x-auto">
+
+                <table className="w-full border-collapse rounded-md overflow-hidden text-nowrap">
+
+                    <thead>
+                        <tr className="bg-primary/20 text-left text-white">
+                            <th className="p-2 font-medium pl-5">User Name</th>
+                            <th className="p-2 font-medium">Movie Name</th>
+                            <th className="p-2 font-medium">Show Time</th>
+                            <th className="p-2 font-medium">Seats</th>
+                            <th className="p-2 font-medium">Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody className="text-sm font-light">
+                        {bookings.map((item, index) => (
+                            <tr key={index} className="border-b border-primary/20 bg-primary/5 even:bg-primary/10">
+                                <td className="p-2 min-w-45 pl-5"> {item.user.name} </td>
+                                <td className="p-2"> {item.show.movie.title} </td>
+                                <td className="p-2"> {dateFormat(item.show.showDateTime)} </td>
+                                <td className="p-2"> {Object.keys(item.bookedSeats).map(seat => item.bookedSeats[seat]).join(", ")} </td>
+                                <td className="p-2"> {currency} {item.amount} </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
+    ) : (
+        <Loading />
+    )
+}
+
+
+
+export default ListBookings
+```
 

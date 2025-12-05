@@ -1325,3 +1325,272 @@ export default MyBookings;
 <br/><br/>
 
 
+
+
+
+## Step 8 - 
+- created Admin pages
+
+
+<br/>
+
+components/admin/AdminNavbar.jsx
+
+```javascript
+import React from "react";
+import { Link } from "react-router-dom";
+import { assets } from "../../assets/assets";
+
+
+
+const AdminNavbar = () => {
+
+    return (
+        <div className="flex items-center justify-between px-6 md:px-10 h-16 border-b border-gray-300/30">
+            <Link to='/' className='max-md:flex-1 flex items-center font-bold text-3xl'>
+                <img src={assets.logo} alt="" className='w-10 h-auto' />
+                MovieHunt
+            </Link>
+        </div>
+    )
+}
+
+export default AdminNavbar
+```
+
+<br/>
+
+
+components/admin/AdminSidebar.jsx
+
+```javascript
+import React from "react";
+import { assets } from "../../assets/assets";
+import { LayoutDashboardIcon, ListCollapseIcon, ListIcon, PlusSquareIcon } from "lucide-react";
+import { NavLink } from "react-router-dom";
+
+
+const AdminSidebar = () => {
+
+    const user = {
+        firstName: 'Admin',
+        lastName: 'User',
+        imageUrl: assets.profile
+    }
+
+
+
+    const adminNavlinks = [
+        {name:'Dashboard', path:'/admin', icon: LayoutDashboardIcon },
+        {name:'Add Shows', path:'/admin/add-shows', icon: PlusSquareIcon },
+        {name:'List Shows', path:'/admin/list-shows', icon: ListIcon },
+        {name:'List Bookings', path:'/admin/list-bookings', icon: ListCollapseIcon }
+    ]
+
+
+
+    return (
+        <div className="h-[calc(100vh-64px)] md:flex flex-col items-center pt-8 max-w-13 md:max-w-60 w-full border-r border-gray-300/20 text-sm">
+            <img className="h-9 md:h-14 w-9 md:w-14 rounded-full mx-auto" src={user.imageUrl} alt="User IMG" />
+            <p className="mt-2 text-base max-md:hidden"> {user.firstName} {user.lastName} </p>
+
+            <div className="w-full">
+                {adminNavlinks.map((link, index) => (
+                    <NavLink key={index} to={link.path} end className={({ isActive }) => `relative flex items-center max-md:justify-center gap-2 w-full py-2.5 min-md:pl-10 first:mt-6 text-gray-400
+                    ${isActive && 'bg-primary/15 text-primary group'}`}>
+
+                        {({isActive}) => (
+                            <>
+                                <link.icon className="w-5 h-5" />
+                                <p className="max-md:hidden"> {link.name} </p>
+                                <span className={`w-1.5 h-10 rounded-l right-0 absolute ${isActive && 'bg-primary'}`} />
+                            </>
+                        )}
+                    </NavLink>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+export default AdminSidebar
+```
+
+
+<br/>
+
+
+pages/admin/Dashboard.jsx
+
+```javascript
+import React from "react";
+
+
+const Dashboard = () => {
+
+    return (
+        <div></div>
+    )
+}
+
+export default Dashboard
+```
+
+<br/>
+
+
+
+pages/admin/AddShows.jsx
+
+```javascript
+import React from "react";
+
+const AddShows = () => {
+
+    return (
+        <div></div>
+    )
+}
+
+export default AddShows
+```
+
+<br/>
+
+
+
+pages/admin/ListShows.jsx
+
+```javascript
+import React from "react";
+
+
+const ListShows = () => {
+
+    return (
+        <div></div>
+    )
+}
+
+export default ListShows
+```
+
+
+<br/>
+
+
+
+
+pages/admin/ListBookings.jsx
+
+```javascript
+import React from "react";
+
+
+const ListBookings = () => {
+
+    return (
+        <div></div>
+    )
+}
+
+export default ListBookings
+```
+
+<br/>
+
+
+
+pages/admin/Layout.jsx
+
+```javascript
+import React from "react";
+import AdminNavbar from "../../components/admin/AdminNavbar";
+import AdminSidebar from "../../components/admin/AdminSidebar";
+import { Outlet } from "react-router-dom";
+
+
+const Layout = () => {
+
+    return (
+        <>
+            <AdminNavbar />
+            <div className="flex">
+                <AdminSidebar />
+
+                <div className="flex-1 px-4 py-10 md:px-10 h-[calc(100vh-64px)] overflow-y-auto">
+                    <Outlet />
+                </div>
+            </div>
+        </>
+    )
+}
+
+export default Layout
+```
+
+
+
+<br/>
+
+
+
+src/App.jsx
+
+```javascript
+import { Route, Routes, useLocation } from "react-router-dom"
+import Navbar from "./components/Navbar"
+import Home from './pages/Home'
+import Movies from './pages/Movies'
+import MovieDetails from './pages/MovieDetails'
+import Favourite from './pages/Favourite'
+import SeatLayout from './pages/SeatLayout'
+import MyBookings from './pages/MyBookings'
+import Footer from "./components/Footer"
+import { Toaster } from 'react-hot-toast'
+import Layout from "./pages/admin/Layout"
+import Dashboard from "./pages/admin/Dashboard"
+import AddShows from "./pages/admin/AddShows"
+import ListShows from "./pages/admin/ListShows"
+import ListBookings from "./pages/admin/ListBookings"
+
+
+
+function App() {
+
+  const isAdminRoute = useLocation().pathname.startsWith('/admin')
+  
+  return (
+    <>
+      <Toaster />
+      {!isAdminRoute && <Navbar />}
+      <Routes>
+        <Route path="/" element={ <Home /> } />
+        <Route path="/movies" element={ <Movies /> } />
+        <Route path="/movies/:id" element={ <MovieDetails /> } />
+        <Route path="/movies/:id/:date" element={ <SeatLayout /> } />
+        <Route path="/my-bookings" element={ <MyBookings /> } />
+        <Route path="/favourite" element={ <Favourite /> } />
+
+        <Route path="/admin/*" element={ <Layout /> }>
+          <Route index element={ <Dashboard /> } />
+          <Route path="add-shows" element={ <AddShows /> } />
+          <Route path="list-shows" element={ <ListShows /> } />
+          <Route path="list-bookings" element={ <ListBookings /> } />
+        </Route>
+
+      </Routes>
+      {!isAdminRoute && <Footer />}
+    </>
+  )
+}
+
+export default App
+```
+
+
+
+<br/><br/>
+
+
+

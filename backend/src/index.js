@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import 'dotenv/config'
+import connectDB from './configs/db.js'
 
 
 const app = express()
@@ -21,7 +22,15 @@ app.get("/", (req, res) => {
 
 
 
+async function main()
+{
+    await connectDB()
 
-app.listen(port, () => {
-    console.log(`Servr listening at http://localhost:${port}`)
-})
+    app.listen(port, () => {
+        console.log(`Servr listening at http://localhost:${port}`)
+    })
+}
+
+
+
+main().catch(err => console.log(err))

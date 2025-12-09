@@ -4,7 +4,7 @@ const userRouter = Router();
 import {z} from "zod"
 import bcrypt from "bcrypt";
 
-import { userModel } from "../models/User.js";
+import {userModel} from "../models/User.js"
 
 import jwt from "jsonwebtoken"
 import { JWT_SECRET_USER } from "../configs/userJWT.js";

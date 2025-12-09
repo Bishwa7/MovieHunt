@@ -2156,3 +2156,20 @@ export default AddShows
 
 
 <br/><br/>
+
+
+## Step 10 - 
+- added vercel.json
+
+vercel.json
+
+```javascript
+  {
+    "rewrites": [
+      {
+        "source": "/(.*)",
+        "destination": "/"
+      }
+    ]
+  }
+```

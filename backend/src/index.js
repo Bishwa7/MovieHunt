@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import 'dotenv/config'
 import connectDB from './configs/db.js'
+import userRouter from './routes/user.js'
 
 
 const app = express()
@@ -18,6 +19,14 @@ app.use(cors())
 app.get("/", (req, res) => {
     res.send("Server is LIVE")
 })
+
+
+app.use("/api/v1/user", userRouter)
+
+
+
+
+
 
 
 

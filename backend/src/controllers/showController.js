@@ -32,7 +32,8 @@ export const getNowPlayingMovies = async (req, res) => {
         
         res.json({
             success: false,
-            message: err.message
+            message: err.message,
+            message2: "error in getNowPlayingMovies controller function"
         })
     }
 }
@@ -134,7 +135,8 @@ export const addShow = async (req, res) => {
         
         res.json({
             success: false,
-            message: err.message
+            message: err.message,
+            message2: "error in addShow to db controller function"
         })
     }
 }

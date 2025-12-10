@@ -470,3 +470,135 @@ vercel.json
     ]
 }
 ```
+
+
+
+<br/><br/>
+
+
+
+
+## Step 4 - 
+- created Movie.js & Show.js DB Schema & Models
+- created showController.js to fetch now playing movies from TMDB
+
+
+<br/>
+
+
+- *created Movie.js & Show.js DB Schema & Models*
+
+
+models/Movie.js
+
+```javascript
+import mongoose, { model, Schema } from "mongoose"
+
+
+const movieSchema = new Schema(
+    {
+        title: {type: String, required: true},
+        title: {type: String, required: true},
+        overview: {type: String, required: true},
+        poster_path: {type: String, required: true},
+        backdrop_path: {type: String, required: true},
+        release_date: {type: String, required: true},
+        original_language: {type: String},
+        tagline: {type: String},
+        genres: {type: Array, required: true},
+        casts: {type: Array, required: true},
+        vote_average: {type: Number, required: true},
+        runtime: {type: Number, required: true},
+    },
+    {
+        timestamps: true
+    }
+)
+
+export const movieModel = model("Movie", movieSchema)
+```
+
+
+
+models/Show.js
+
+```javascript
+import mongoose, { model, Schema } from "mongoose";
+
+
+const showSchema = new Schema(
+    {
+        movie: {type: String, required: true, ref: "Movie"},
+        showDateTime: {type: Date, required: true},
+        showPrice: {type: Number, required: true},
+        occupiedSeats: {type: Object, default:{}}
+    },
+    {
+        minimize: false
+    }
+)
+
+
+export const showModel = model("Show", showSchema)
+```
+
+<br/>
+
+
+- *created showController.js to fetch now playing movies from TMDB*
+
+
+.env.example
+
+```
+MONGODB_URL=MONGODB_ATLAS_Connection_String
+
+JWT_SECRET_USER=user_JWT_String
+
+TMDB_API_KEY=API_KEY_from_themoviedb.org
+```
+
+
+
+
+
+controllers/showController.js
+
+```javascript
+import axios from "axios"
+
+export const getNowPlayingMovies = async (req, res) => {
+    
+    try
+    {
+        const {data} = await axios.get("https://api.themoviedb.org/3/movie/now_playing",
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.TMDB_API_KEY}`
+                }
+            }
+        )
+
+
+        const movies = data.results
+
+        res.json({
+            success: true,
+            movies: movies
+        })
+
+    }
+    catch(err)
+    {
+        console.error(err);
+        
+        res.json({
+            success: false,
+            message: err.message
+        })
+    }
+}
+```
+
+
+<br/><br/>

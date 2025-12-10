@@ -86,7 +86,7 @@ export const addShow = async (req, res) => {
                 original_language: movieApiData.original_language || "",
                 tagline: movieApiData.tagline || "",
                 genres: movieApiData.genres,
-                casts: movieCreditsData.casts,
+                casts: movieCreditsData.cast,
                 vote_average: movieApiData.vote_average,
                 runtime: movieApiData.runtime
             }

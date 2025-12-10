@@ -481,6 +481,7 @@ vercel.json
 ## Step 4 - 
 - created Movie.js & Show.js DB Schema & Models
 - created showController.js to fetch now playing movies from TMDB
+- added routes/showRoutes.js
 
 
 <br/>
@@ -494,9 +495,9 @@ models/Movie.js
 ```javascript
 import mongoose, { model, Schema } from "mongoose"
 
-
 const movieSchema = new Schema(
     {
+        _id: {type: String, required: true},
         title: {type: String, required: true},
         title: {type: String, required: true},
         overview: {type: String, required: true},
@@ -514,6 +515,7 @@ const movieSchema = new Schema(
         timestamps: true
     }
 )
+
 
 export const movieModel = model("Movie", movieSchema)
 ```
@@ -566,7 +568,12 @@ controllers/showController.js
 
 ```javascript
 import axios from "axios"
+import { movieModel } from "../models/Movie.js"
+import { showModel } from "../models/Show.js"
 
+
+
+// Api to get now playing movies from TMDB
 export const getNowPlayingMovies = async (req, res) => {
     
     try
@@ -598,7 +605,181 @@ export const getNowPlayingMovies = async (req, res) => {
         })
     }
 }
+
+
+
+
+
+// API to add a new show to the database
+export const addShow = async (req, res) => {
+
+    try{
+        const {movieId, showsInput, showPrice} = req.body
+
+        let movie = await movieModel.findById(movieId)
+
+        if(!movie)
+        {
+            // fetch movie details & credits from tmdb
+            const [movieDetailsResponse, movieCreditsResponse] = await Promise.all([
+                axios.get(`https://api.themoviedb.org/3/movie/${movieId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.TMDB_API_KEY}`
+                        }
+                    }
+                ),
+
+                axios.get(`https://api.themoviedb.org/3/movie/${movieId}/credits`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.TMDB_API_KEY}`
+                        }
+                    }
+                )
+            ])
+
+
+            const movieApiData = movieDetailsResponse.data
+            const movieCreditsData = movieCreditsResponse.data
+
+
+            const movieDetails = {
+                _id: movieId,
+                title: movieApiData.title,
+                overview: movieApiData.overview,
+                poster_path: movieApiData.poster_path,
+                backdrop_path: movieApiData.backdrop_path,
+                release_date: movieApiData.release_date,
+                original_language: movieApiData.original_language || "",
+                tagline: movieApiData.tagline || "",
+                genres: movieApiData.genres,
+                casts: movieCreditsData.casts,
+                vote_average: movieApiData.vote_average,
+                runtime: movieApiData.runtime
+            }
+
+
+
+            // adding movie to mongodb
+            movie = await movieModel.create(movieDetails)
+        }
+
+        
+        const showsToCreate = []
+
+        showsInput.forEach(show => {
+            const showDate = show.date
+
+            show.time.forEach((time)=>{
+                const dateTimeString = `${showDate}T${time}`
+
+                showsToCreate.push({
+                    movie: movieId,
+                    showDateTime: new Date(dateTimeString),
+                    showPrice,
+                    occupiedSeats: {}
+                })
+            })
+        });
+
+
+        if(showsToCreate.length > 0)
+        {
+            await showModel.insertMany(showsToCreate)
+        }
+
+
+        res.json({
+            success: true,
+            message: "Show added successfully"
+        })
+
+        
+    }
+    catch(err)
+    {
+        console.error(err);
+        
+        res.json({
+            success: false,
+            message: err.message
+        })
+    }
+}
 ```
+
+
+<br/>
+
+- *added routes/showRoutes.js*
+
+
+showRoutes.js
+
+```javascript
+import express, { Router } from "express"
+import { addShow, getNowPlayingMovies } from "../controllers/showController.js"
+
+
+const showRouter = Router()
+
+
+showRouter.get("/now-playing", getNowPlayingMovies)
+showRouter.post("/add", addShow)
+
+
+export default showRouter
+```
+
+
+
+index.js
+
+```javascript
+import express from 'express'
+import cors from 'cors'
+import 'dotenv/config'
+import connectDB from './configs/db.js'
+import userRouter from './routes/user.js'
+import showRouter from './routes/showRoutes.js'
+
+
+const app = express()
+const port = 3000
+
+
+// Middleware
+app.use(express.json())
+app.use(cors())
+
+
+// API Routes
+app.get("/", (req, res) => {
+    res.send("Server is LIVE")
+})
+
+
+app.use("/api/v1/user", userRouter)     // user route
+app.use("/api/show", showRouter)        // show route
+
+
+
+
+async function main()
+{
+    await connectDB()
+
+    app.listen(port, () => {
+        console.log(`Servr listening at http://localhost:${port}`)
+    })
+}
+
+
+
+main().catch(err => console.log(err))
+```
+
 
 
 <br/><br/>

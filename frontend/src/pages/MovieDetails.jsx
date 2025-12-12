@@ -3,11 +3,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { dummyDateTimeData, dummyShowsData } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
-import timeFormat from "../lib/TimeFormat";
 import DateSelect from "../components/DateSelect";
 import MovieCard from "../components/MovieCard";
 import Loading from "../components/Loading";
-
+import timeFormatLib from "../lib/timeFormatLib";
 
 
 
@@ -63,7 +62,7 @@ const MovieDetails = () => {
 
                     <p className="text-gray-400 mt-2 text-sm leading-tight max-w-xl"> {show.movie.overview} </p>
 
-                    <p> {timeFormat(show.movie.runtime)} | {show.movie.genres.map(genre => genre.name).join(", ")} | {show.movie.release_date.split("-")[0]} </p>
+                    <p> {timeFormatLib(show.movie.runtime)} | {show.movie.genres.map(genre => genre.name).join(", ")} | {show.movie.release_date.split("-")[0]} </p>
 
                     <div className="flex items-center flex-wrap gap-4 mt-4">
 

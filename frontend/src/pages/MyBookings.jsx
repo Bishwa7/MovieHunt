@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { dummyBookingData } from "../assets/assets";
 import BlurCircle from "../components/BlurCircle";
 import Loading from "../components/Loading";
-import timeFormat from "../lib/TimeFormat";
 import dateFormat from "../lib/dateFormat";
+import timeFormatLib from "../lib/timeFormatLib";
 
 
 const MyBookings = () => {
@@ -43,7 +43,7 @@ const MyBookings = () => {
 
                         <div className="flex flex-col p-4">
                             <p className="text-lg font-semibold">{item.show.movie.title}</p>
-                            <p className="text-gray-400 text-sm">{timeFormat(item.show.movie.runtime)}</p>
+                            <p className="text-gray-400 text-sm">{timeFormatLib(item.show.movie.runtime)}</p>
                             <p className="text-gray-400 text-sm mt-auto">{dateFormat(item.show.showDateTime)}</p>
                         </div>
                     </div>

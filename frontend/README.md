@@ -500,10 +500,10 @@ export default BlurCircle
 ```
 
 
-lib/timeFormat.js
+lib/timeFormatLib.js
 
 ```javascript
-const timeFormat = (minutes) => {
+const timeFormatLib = (minutes) => {
 
     const hours = Math.floor(minutes/60)
 
@@ -513,7 +513,7 @@ const timeFormat = (minutes) => {
     return ` ${hours}h ${minutesRemainder}m`
 }
 
-export default timeFormat
+export default timeFormatLib
 ```
 
 <br/>

@@ -9,7 +9,7 @@ const Footer = () => {
             <div className="flex flex-col md:flex-row justify-between w-full gap-10 border-b border-gray-500 pb-14">
                 <div className="md:max-w-96">
                     <div className='flex items-center font-bold text-3xl'>
-                        <img alt="logo" class="h-11" src={assets.logo} />
+                        <img alt="logo" className="h-11" src={assets.logo} />
                         MovieHunt
                     </div>
                     

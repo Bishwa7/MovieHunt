@@ -2173,3 +2173,450 @@ vercel.json
     ]
   }
 ```
+
+
+<br/><br/>
+
+
+
+## Step 11 - 
+- added custom SignUp/Login page and removed [Clerk](https://clerk.com/) from project
+- added custom UserMenu in Navbar after removing [Clerk](https://clerk.com/)
+
+
+<br/>
+
+
+- *added custom SignUp/Login page and removed [Clerk](https://clerk.com/) from project*
+
+.env.example
+```
+VITE_CURRENCY = '$'
+VITE_AUTH_API_URL=https://your-backend/api/v1/user
+```
+
+
+pages/Auth.jsx
+
+```javascript
+import React, { useState } from "react";
+import { assets } from "../assets/assets";
+import { useNavigate } from "react-router-dom";
+
+export default function Auth() {
+  const [mode, setMode] = useState("signup"); // signup | signin
+
+  const navigate = useNavigate();
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value.trim();
+    const userName = mode === "signup" ? e.target.username.value.trim() : undefined;
+
+    if (!email || !password || (mode === "signup" && !userName)) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+
+    const payload = mode === "signup" ? { email, password, userName } : { email, password };
+
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/${mode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, userName }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Error occurred");
+        return;
+      }
+
+      if (mode === "signin") {
+        localStorage.setItem("token", data.token); 
+        localStorage.setItem("user", JSON.stringify(data.user)); 
+        navigate("/");
+      }
+
+      alert(data.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  return (
+    <div className="min-h-screen flex bg-primary">
+      {/* Left Section */}
+      <div className="hidden md:flex w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex-col items-start justify-center p-14 relative overflow-hidden">
+
+        {/* BG Glow */}
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-primary/40 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute -top-10 -right-10 w-60 h-60 bg-blue-500/20 rounded-full blur-3xl opacity-20"></div>
+
+
+        <div className="relative z-10 space-y-6 max-w-lg">
+
+          <div className="flex items-center gap-3 font-bold text-4xl tracking-wide">
+            <img src={assets.logo} alt="" className="w-12 h-auto drop-shadow-lg" />
+            MovieHunt
+          </div>
+
+          <p className="text-lg leading-relaxed opacity-90">
+            Your all-in-one platform to explore movies, check showtimes, and book tickets effortlessly.
+          </p>
+
+
+          <div className="p-4 bg-white/10 rounded-xl border border-white/20 backdrop-blur-sm shadow-lg">
+            <p className="text-sm opacity-90 leading-relaxed">
+              MovieHunt is a MERN-based modern movie ticketing system with powerful admin controls for 
+              managing movies, theatres, shows, and bookings — built with performance and usability in mind.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+
+
+      {/* Right Section */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 text-gray-900">
+        <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow">
+          <h2 className="text-2xl font-semibold mb-6 text-center">
+            {mode === "signup" ? "Create Account" : "Welcome Back"}
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                name="email"
+                type="email"
+                className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            {mode === "signup" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Username</label>
+                <input
+                  name="username"
+                  type="text"
+                  className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+                  placeholder="Choose a username"
+                  required
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input
+                name="password"
+                type="password"
+                className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+            >
+              {mode === "signup" ? "Sign Up" : "Log In"}
+            </button>
+          </form>
+
+          {/* Toggle */}
+          <p className="text-center mt-4 text-sm">
+            {mode === "signup" ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  className="text-blue-600 font-semibold"
+                  onClick={() => setMode("signin")}
+                >
+                  Log In
+                </button>
+              </>
+            ) : (
+              <>
+                Don't have an account?{" "}
+                <button
+                  className="text-blue-600 font-semibold"
+                  onClick={() => setMode("signup")}
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+
+App.jsx
+
+```javascript
+import { Route, Routes, useLocation } from "react-router-dom"
+import Navbar from "./components/Navbar"
+import Home from './pages/Home'
+import Movies from './pages/Movies'
+import MovieDetails from './pages/MovieDetails'
+import Favourite from './pages/Favourite'
+import SeatLayout from './pages/SeatLayout'
+import MyBookings from './pages/MyBookings'
+import Footer from "./components/Footer"
+import { Toaster } from 'react-hot-toast'
+import Layout from "./pages/admin/Layout"
+import Dashboard from "./pages/admin/Dashboard"
+import AddShows from "./pages/admin/AddShows"
+import ListShows from "./pages/admin/ListShows"
+import ListBookings from "./pages/admin/ListBookings"
+import Auth from "./pages/Auth"
+
+
+
+function App() {
+
+  const isAdminRoute = useLocation().pathname.startsWith('/admin')
+  const isAuthRoute = useLocation().pathname.startsWith('/auth')
+  
+  return (
+    <>
+      <Toaster />
+      {!isAdminRoute && !isAuthRoute && <Navbar />}
+      <Routes>
+        <Route path="/" element={ <Home /> } />
+        <Route path="/movies" element={ <Movies /> } />
+        <Route path="/movies/:id" element={ <MovieDetails /> } />
+        <Route path="/movies/:id/:date" element={ <SeatLayout /> } />
+        <Route path="/my-bookings" element={ <MyBookings /> } />
+        <Route path="/favourite" element={ <Favourite /> } />
+        <Route path="/auth" element={<Auth />} />
+
+        <Route path="/admin/*" element={ <Layout /> }>
+          <Route index element={ <Dashboard /> } />
+          <Route path="add-shows" element={ <AddShows /> } />
+          <Route path="list-shows" element={ <ListShows /> } />
+          <Route path="list-bookings" element={ <ListBookings /> } />
+        </Route>
+
+      </Routes>
+      {!isAdminRoute && !isAuthRoute && <Footer />}
+    </>
+  )
+}
+
+export default App
+```
+
+
+main.jsx
+
+```javascript
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+import { BrowserRouter } from 'react-router-dom'
+
+
+
+createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>,
+)
+```
+
+
+
+<br/>
+
+
+
+
+- *added custom UserMenu in Navbar after removing [Clerk](https://clerk.com/)*
+
+
+
+components/UserMenu.jsx
+
+```javascript
+import { useState, useRef, useEffect } from "react";
+import { Settings, Ticket, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const UserMenu = ({ user }) => {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef();
+  const navigate = useNavigate();
+
+
+  const logoutUser = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.reload();
+    };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
+
+
+
+  return (
+    <div className="relative" ref={menuRef}>
+      {/* Avatar Button */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold"
+      >
+        {user?.name?.charAt(0).toUpperCase()}
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-xl border overflow-hidden">
+
+        
+          <div className="p-4 border-b">
+            <p className="font-semibold">{user.name}</p>
+            <p className="text-sm text-gray-500">{user.email}</p>
+          </div>
+
+          
+          <div className="flex flex-col text-sm">
+
+            <button
+              onClick={() => navigate("/account")}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100"
+            >
+              <Settings size={18} /> Manage Account
+            </button>
+
+            <button
+              onClick={() => navigate("/my-bookings")}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100"
+            >
+              <Ticket size={18} /> My Bookings
+            </button>
+
+            <button
+              onClick={logoutUser}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 text-red-500"
+            >
+              <LogOut size={18} /> Sign Out
+            </button>
+
+          </div>
+
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserMenu;
+```
+
+
+
+components/Navbar.jsx
+
+```javascript
+import { Link, useNavigate } from 'react-router-dom'
+import { assets } from '../assets/assets';
+import { MenuIcon, SearchIcon, TicketPlus, XIcon } from 'lucide-react'
+import { useState } from 'react';
+import UserMenu from '../components/UserMenu';
+
+
+
+const Navbar = () => {
+
+    const [isOpen, setIsOpen] = useState(false)
+    // const {user} = useUser()
+    // const {openSignIn} = useClerk()
+
+    const user = JSON.parse(localStorage.getItem("user"));  // null = logged out
+
+    const navigate = useNavigate()
+
+    
+
+    return (
+        <div className="fixed top-0 left-0 z-50 w-full flex items-center justify-between px-6 md:px-16 lg:px-36 py-5">
+
+            
+            <div>
+                <Link to='/' className='max-md:flex-1 flex items-center font-bold text-3xl'>
+                    <img src={assets.logo} alt="" className='w-10 h-auto' />
+                    MovieHunt
+                </Link>
+            </div>
+            
+
+
+            <div className={`max-md:absolute max-md:top-0 max-md:left-0 max-md:font-medium
+            max-md:text-lg z-50 flex flex-col md:flex-row items-center
+            max-md:justify-center gap-8 min-md:px-8 py-3 max-md:h-screen
+            min-md:rounded-full backdrop-blur bg-black/70 md:bg-white/10 md:border
+            border-gray-300/20 overflow-hidden transition-[width] duration-300 ${isOpen ? 'max-md:w-full' : 'max-md:w-0'}`}>
+
+                <XIcon className='md:hidden absolute top-6 right-6 w-6 h-6 cursor-pointer' onClick={()=> {setIsOpen(!isOpen)}} />
+
+                <Link onClick={()=>{scrollTo(0,0); setIsOpen(false)}} to='/'>Home</Link>
+                <Link onClick={()=>{scrollTo(0,0); setIsOpen(false)}} to='/movies'>Movies</Link>
+                <Link onClick={()=>{scrollTo(0,0); setIsOpen(false)}} to='/'>Theaters</Link>
+                <Link onClick={()=>{scrollTo(0,0); setIsOpen(false)}} to='/'>Releases</Link>
+                <Link onClick={()=>{scrollTo(0,0); setIsOpen(false)}} to='/favourite'>Favourites</Link>
+            </div>
+
+
+
+            <div className='flex items-center gap-8'>
+                <SearchIcon className='max-md:hidden w-6 h-6 cursor-pointer' />
+
+                {!user ? (
+                    <button
+                        onClick={() => navigate("/auth")}
+                        className='px-4 py-1 sm:px-7 sm:py-2 bg-primary hover:bg-primary-dull transition rounded-full font-medium cursor-pointer'
+                    >
+                        Signup / Login
+                    </button>
+                ) : (
+                    <UserMenu user={user} />
+                )}
+
+            </div>
+
+            <MenuIcon className='max-md:ml-4 md:hidden w-8 h-8 cursor-pointer' onClick={()=>{setIsOpen(!isOpen)}} />
+        </div>
+    )
+}
+
+
+export default Navbar;
+```

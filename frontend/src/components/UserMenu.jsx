@@ -42,13 +42,13 @@ const UserMenu = ({ user }) => {
         <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-xl border overflow-hidden">
 
         
-          <div className="p-4 border-b">
+          <div className="p-4 border-b text-gray-900">
             <p className="font-semibold">{user.name}</p>
-            <p className="text-sm text-gray-500">{user.email}</p>
+            <p className="text-sm">{user.email}</p>
           </div>
 
           
-          <div className="flex flex-col text-sm">
+          <div className="flex flex-col text-sm text-gray-600">
 
             <button
               onClick={() => navigate("/account")}

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { assets } from "../../assets/assets";
 
-export default function Auth() {
+export default function AdminAuth() {
   const [mode, setMode] = useState("signup"); // signup | signin
 
   const navigate = useNavigate();
@@ -13,21 +13,21 @@ export default function Auth() {
 
     const email = e.target.email.value.trim();
     const password = e.target.password.value.trim();
-    const userName = mode === "signup" ? e.target.username.value.trim() : undefined;
+    const adminName = mode === "signup" ? e.target.username.value.trim() : undefined;
 
-    if (!email || !password || (mode === "signup" && !userName)) {
+    if (!email || !password || (mode === "signup" && !adminName)) {
       alert("Please fill in all required fields!");
       return;
     }
 
-    const payload = mode === "signup" ? { email, password, userName } : { email, password };
+    const payload = mode === "signup" ? { email, password, adminName } : { email, password };
 
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_AUTH_API_URL}/${mode}`, {
+      const res = await fetch(`${import.meta.env.VITE_ADMIN_AUTH_API_URL}/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, userName }),
+        body: JSON.stringify({ email, password, adminName }),
       });
 
       const data = await res.json();
@@ -39,8 +39,8 @@ export default function Auth() {
 
       if (mode === "signin") {
         localStorage.setItem("token", data.token); 
-        localStorage.setItem("user", JSON.stringify(data.user)); 
-        navigate("/");
+        localStorage.setItem("user", JSON.stringify(data.admin)); 
+        navigate("/admin");
       }
 
       alert(data.message);
@@ -55,7 +55,7 @@ export default function Auth() {
       {/* Left Section */}
       <div className="hidden md:flex w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex-col items-start justify-center p-14 relative overflow-hidden">
 
-        {/* BG Glow */}
+        {/* BG */}
         <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-primary/40 rounded-full blur-3xl opacity-30"></div>
         <div className="absolute -top-10 -right-10 w-60 h-60 bg-blue-500/20 rounded-full blur-3xl opacity-20"></div>
 
@@ -68,7 +68,7 @@ export default function Auth() {
           </div>
 
           <p className="text-lg leading-relaxed opacity-90">
-            Your all-in-one platform to explore movies, check showtimes, and book tickets effortlessly.
+            Admin Login
           </p>
 
 
@@ -88,7 +88,7 @@ export default function Auth() {
       <div className="w-full md:w-1/2 flex items-center justify-center p-6 text-gray-900">
         <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow">
           <h2 className="text-2xl font-semibold mb-6 text-center">
-            {mode === "signup" ? "Create Account" : "Welcome Back"}
+            {mode === "signup" ? "Create Admin Account" : "Welcome Back Admin"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -99,19 +99,19 @@ export default function Auth() {
                 name="email"
                 type="email"
                 className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-                placeholder="Enter your email"
+                placeholder="Enter admin email"
                 required
               />
             </div>
 
             {mode === "signup" && (
               <div>
-                <label className="block text-sm font-medium mb-1">Username</label>
+                <label className="block text-sm font-medium mb-1">Admin name</label>
                 <input
                   name="username"
                   type="text"
                   className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-                  placeholder="Choose a username"
+                  placeholder="Choose an admin name"
                   required
                 />
               </div>
@@ -123,7 +123,7 @@ export default function Auth() {
                 name="password"
                 type="password"
                 className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
-                placeholder="Enter your password"
+                placeholder="Enter admin password"
                 required
               />
             </div>
@@ -140,7 +140,7 @@ export default function Auth() {
           <p className="text-center mt-4 text-sm">
             {mode === "signup" ? (
               <>
-                Already have an account?{" "}
+                Already have an  Admin account?{" "}
                 <button
                   className="text-blue-600 font-semibold"
                   onClick={() => setMode("signin")}
@@ -150,7 +150,7 @@ export default function Auth() {
               </>
             ) : (
               <>
-                Don't have an account?{" "}
+                Don't have an Admin account?{" "}
                 <button
                   className="text-blue-600 font-semibold"
                   onClick={() => setMode("signup")}

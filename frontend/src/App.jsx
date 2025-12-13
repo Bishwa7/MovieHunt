@@ -14,6 +14,8 @@ import AddShows from "./pages/admin/AddShows"
 import ListShows from "./pages/admin/ListShows"
 import ListBookings from "./pages/admin/ListBookings"
 import Auth from "./pages/Auth"
+import AdminAuth from "./pages/admin/AdminAuth"
+import AdminProtected from "./pages/admin/AdminProtected"
 
 
 
@@ -35,11 +37,15 @@ function App() {
         <Route path="/favourite" element={ <Favourite /> } />
         <Route path="/auth" element={<Auth />} />
 
+
+        <Route path="/admin/auth" element={<AdminAuth />} />
         <Route path="/admin/*" element={ <Layout /> }>
-          <Route index element={ <Dashboard /> } />
-          <Route path="add-shows" element={ <AddShows /> } />
-          <Route path="list-shows" element={ <ListShows /> } />
-          <Route path="list-bookings" element={ <ListBookings /> } />
+          <Route element={<AdminProtected />}>
+            <Route index element={ <Dashboard /> } />
+            <Route path="add-shows" element={ <AddShows /> } />
+            <Route path="list-shows" element={ <ListShows /> } />
+            <Route path="list-bookings" element={ <ListBookings /> } />
+          </Route>
         </Route>
 
       </Routes>

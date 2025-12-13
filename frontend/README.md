@@ -2620,3 +2620,287 @@ const Navbar = () => {
 
 export default Navbar;
 ```
+
+
+
+
+## Step 12 - 
+- added Admin Login page (AdminAuth.jsx)
+
+
+<br/>
+
+
+- *added Admin Login Page (AdminAuth.jsx)*
+
+
+
+.env.example
+
+```
+VITE_CURRENCY = '$'
+VITE_AUTH_API_URL=https://your-backend/api/v1/user
+VITE_ADMIN_AUTH_API_URL=https://your-backend/api/v1/admin
+```
+
+
+
+
+pages/admin/AdminAuth.jsx
+
+```javascript
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { assets } from "../../assets/assets";
+
+export default function AdminAuth() {
+  const [mode, setMode] = useState("signup"); // signup | signin
+
+  const navigate = useNavigate();
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const email = e.target.email.value.trim();
+    const password = e.target.password.value.trim();
+    const adminName = mode === "signup" ? e.target.username.value.trim() : undefined;
+
+    if (!email || !password || (mode === "signup" && !adminName)) {
+      alert("Please fill in all required fields!");
+      return;
+    }
+
+    const payload = mode === "signup" ? { email, password, adminName } : { email, password };
+
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_ADMIN_AUTH_API_URL}/${mode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, adminName }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Error occurred");
+        return;
+      }
+
+      if (mode === "signin") {
+        localStorage.setItem("token", data.token); 
+        localStorage.setItem("user", JSON.stringify(data.admin)); 
+        navigate("/admin");
+      }
+
+      alert(data.message);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  return (
+    <div className="min-h-screen flex bg-primary">
+      {/* Left Section */}
+      <div className="hidden md:flex w-1/2 bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex-col items-start justify-center p-14 relative overflow-hidden">
+
+        {/* BG */}
+        <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-primary/40 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute -top-10 -right-10 w-60 h-60 bg-blue-500/20 rounded-full blur-3xl opacity-20"></div>
+
+
+        <div className="relative z-10 space-y-6 max-w-lg">
+
+          <div className="flex items-center gap-3 font-bold text-6xl tracking-wide">
+            <img src={assets.logo} alt="" className="w-20 h-auto drop-shadow-lg" />
+            MovieHunt
+          </div>
+
+          <p className="text-lg leading-relaxed opacity-90">
+            Admin Login
+          </p>
+
+
+          <div className="p-4 bg-white/10 rounded-xl border border-white/20 backdrop-blur-sm shadow-lg">
+            <p className="text-sm opacity-90 leading-relaxed">
+              MovieHunt is a MERN-based modern movie ticketing system with powerful admin controls for 
+              managing movies, theatres, shows, and bookings — built with performance and usability in mind.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+
+
+      {/* Right Section */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 text-gray-900">
+        <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow">
+          <h2 className="text-2xl font-semibold mb-6 text-center">
+            {mode === "signup" ? "Create Admin Account" : "Welcome Back Admin"}
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                name="email"
+                type="email"
+                className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+                placeholder="Enter admin email"
+                required
+              />
+            </div>
+
+            {mode === "signup" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Admin name</label>
+                <input
+                  name="username"
+                  type="text"
+                  className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+                  placeholder="Choose an admin name"
+                  required
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Password</label>
+              <input
+                name="password"
+                type="password"
+                className="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300"
+                placeholder="Enter admin password"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all"
+            >
+              {mode === "signup" ? "Sign Up" : "Log In"}
+            </button>
+          </form>
+
+          {/* Toggle */}
+          <p className="text-center mt-4 text-sm">
+            {mode === "signup" ? (
+              <>
+                Already have an  Admin account?{" "}
+                <button
+                  className="text-blue-600 font-semibold"
+                  onClick={() => setMode("signin")}
+                >
+                  Log In
+                </button>
+              </>
+            ) : (
+              <>
+                Don't have an Admin account?{" "}
+                <button
+                  className="text-blue-600 font-semibold"
+                  onClick={() => setMode("signup")}
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+
+
+
+pages/admin/AdminProtected.jsx
+
+```javascript
+import { Navigate, Outlet } from "react-router-dom";
+
+const AdminProtected = () => {
+  const adminToken = localStorage.getItem("adminToken");
+
+  if (!adminToken) {
+    return <Navigate to="/admin/auth" replace />;
+  }
+
+
+  return <Outlet />;
+};
+
+export default AdminProtected;
+```
+
+
+src/App.jsx
+
+```javascript
+import { Route, Routes, useLocation } from "react-router-dom"
+import Navbar from "./components/Navbar"
+import Home from './pages/Home'
+import Movies from './pages/Movies'
+import MovieDetails from './pages/MovieDetails'
+import Favourite from './pages/Favourite'
+import SeatLayout from './pages/SeatLayout'
+import MyBookings from './pages/MyBookings'
+import Footer from "./components/Footer"
+import { Toaster } from 'react-hot-toast'
+import Layout from "./pages/admin/Layout"
+import Dashboard from "./pages/admin/Dashboard"
+import AddShows from "./pages/admin/AddShows"
+import ListShows from "./pages/admin/ListShows"
+import ListBookings from "./pages/admin/ListBookings"
+import Auth from "./pages/Auth"
+import AdminAuth from "./pages/admin/AdminAuth"
+import AdminProtected from "./pages/admin/AdminProtected"
+
+
+
+function App() {
+
+  const isAdminRoute = useLocation().pathname.startsWith('/admin')
+  const isAuthRoute = useLocation().pathname.startsWith('/auth')
+  
+  return (
+    <>
+      <Toaster />
+      {!isAdminRoute && !isAuthRoute && <Navbar />}
+      <Routes>
+        <Route path="/" element={ <Home /> } />
+        <Route path="/movies" element={ <Movies /> } />
+        <Route path="/movies/:id" element={ <MovieDetails /> } />
+        <Route path="/movies/:id/:date" element={ <SeatLayout /> } />
+        <Route path="/my-bookings" element={ <MyBookings /> } />
+        <Route path="/favourite" element={ <Favourite /> } />
+        <Route path="/auth" element={<Auth />} />
+
+
+        <Route path="/admin/auth" element={<AdminAuth />} />
+        <Route path="/admin/*" element={ <Layout /> }>
+          <Route element={<AdminProtected />}>
+            <Route index element={ <Dashboard /> } />
+            <Route path="add-shows" element={ <AddShows /> } />
+            <Route path="list-shows" element={ <ListShows /> } />
+            <Route path="list-bookings" element={ <ListBookings /> } />
+          </Route>
+        </Route>
+
+      </Routes>
+      {!isAdminRoute && !isAuthRoute && <Footer />}
+    </>
+  )
+}
+
+export default App
+```
+
+<br/><br/>

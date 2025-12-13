@@ -783,3 +783,299 @@ main().catch(err => console.log(err))
 
 
 <br/><br/>
+
+
+## Step 5 - 
+- added admin.js Model (DB)
+- added admin.js routes
+- added adminAuthMiddleware.js in showRoutes.js (for only admin to maintain them)
+
+<br/>
+
+- *added admin.js Model (DB)*
+
+models/admin.js
+
+```javascript
+import mongoose, { model, Schema } from "mongoose";
+
+const adminSchema = new Schema({
+    email: {type:String, required:true, unique:true},
+    adminName: {type:String, required:true},
+    password: {type:String, required:true}
+})
+
+
+export const adminModel = model("Admin", adminSchema)
+```
+
+<br/>
+
+- *added admin.js routes*
+
+.env.example
+```
+MONGODB_URL=MONGODB_ATLAS_Connection_String
+
+JWT_SECRET_USER=user_JWT_String
+JWT_SECRET_ADMIN=admin_JWT_String
+
+TMDB_API_KEY=API_KEY_from_themoviedb.org
+```
+
+
+
+configs/adminJWT.js
+
+```javascript
+import dotenv from "dotenv"
+dotenv.config()
+
+
+export const JWT_SECRET_ADMIN = process.env.JWT_SECRET_ADMIN;
+```
+
+
+routes/admin.js
+
+```javascript
+import { Router } from "express";
+const adminRouter = Router();
+
+import {z} from "zod"
+import bcrypt from "bcrypt";
+
+import jwt from "jsonwebtoken"
+import { JWT_SECRET_ADMIN } from "../configs/adminJWT.js";
+import { adminModel } from "../models/admin.js";
+
+
+
+
+adminRouter.post("/signup", async (req, res) => {
+    const requiredBody = z.object({
+        email: z.email(),
+        adminName: z.string().min(5).max(30),
+        password: z.string().min(8).max(20)
+        .regex(/[A-Z]/, { message: "Password must contain at least one uppercase letter." })
+        .regex(/[a-z]/, { message: "Password must contain at least one lowercase letter." })
+        .regex(/[0-9]/, { message: "Password must contain at least one number." })
+        .regex(/[^A-Za-z0-9]/, { message: "Password must contain at least one special character." })
+    })
+
+
+    const parsedData = requiredBody.safeParse(req.body);
+
+    if(!parsedData.success){
+        res.status(411).json({
+            message: "incorrect input format",
+            error: parsedData.error
+        })
+        return
+    }
+
+
+    const {email, adminName, password} = req.body;
+    
+    try{
+        const hashedPassword = await bcrypt.hash(password, 5)
+
+        await adminModel.create({
+            email: email,
+            adminName: adminName,
+            password: hashedPassword
+        })
+
+        res.status(200).json({
+            message: "You are signed up (Admin)"
+        })
+    }
+    catch(err){
+        console.log("error while signup (db entry)")
+        console.error(err)
+
+        res.status(403).json({
+            message: "Admin already exists"
+        })
+    }
+})
+
+
+
+adminRouter.post("/signin", async (req, res) => {
+    
+    const { email, password } = req.body;
+
+    const admin = await adminModel.findOne({
+        email: email
+    })
+
+
+    if(admin)
+    {
+        const passwordMatch = await bcrypt.compare(password, admin.password)
+
+        if(passwordMatch)
+        {
+            const token = jwt.sign({ id: admin._id }, JWT_SECRET_ADMIN)
+
+            res.status(200).json({
+                message: "Login Succesfull",
+                token: token,
+                "admin": {
+                    "name": admin.adminName,
+                    "email": admin.email
+                }
+            })
+
+        }
+        else{
+            res.status(403).json({
+                message: "Password incorrect"
+            })
+        }
+        
+    }
+    else
+    {
+        res.status(403).json({
+            message: "Email incorrect"
+        })
+    }
+})
+
+
+export default adminRouter;
+```
+
+
+src/index.js
+
+```javascript
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from 'express'
+import cors from 'cors'
+import 'dotenv/config'
+import connectDB from './configs/db.js'
+import userRouter from './routes/user.js'
+import showRouter from './routes/showRoutes.js'
+import adminRouter from "./routes/admin.js";
+
+
+const app = express()
+const port = 3000
+
+
+// Middleware
+app.use(express.json())
+app.use(cors())
+
+
+
+// API Routes
+app.get("/", (req, res) => {
+    res.send("Server is LIVE")
+})
+
+app.use("/api/v1/admin", adminRouter)   // admin route
+app.use("/api/v1/user", userRouter)     // user route
+app.use("/api/v1/show", showRouter)        // show route
+
+
+
+
+async function main()
+{
+    await connectDB()
+
+    app.listen(port, () => {
+        console.log(`Servr listening at http://localhost:${port}`)
+    })
+}
+
+
+
+main().catch(err => console.log(err))
+```
+
+<br/>
+
+
+- *added adminAuthMiddleware.js in showRoutes.js (for only admin to maintain them)*
+
+
+adminAuthMiddleware.js
+
+```javascript
+import jwt from "jsonwebtoken";
+import adminModel from "../models/admin.js";
+import { JWT_SECRET_ADMIN } from "../config/config.js";
+
+
+
+export const adminAuthMiddleware = async (req, res, next) => {
+
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      message: "Authorization header is missing or malformed",
+    });
+  }
+
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET_ADMIN);
+
+    if (!decoded.id) {
+      return res.status(403).json({ message: "Invalid token payload" });
+    }
+
+  
+    const admin = await adminModel.findById(decoded.id);
+
+
+
+    if (!admin) {
+      return res.status(403).json({ message: "Admin not found" });
+    }
+
+
+    req.adminId = admin._id;
+    next();
+  }
+  catch(err)
+  {
+    console.error(err)
+    return res.status(403).json({ message: "Invalid or expired token" });
+  }
+};
+```
+
+
+
+routes/showRoutes.js
+
+```javascript
+import express, { Router } from "express"
+import { addShow, getNowPlayingMovies } from "../controllers/showController.js"
+import { adminAuthMiddleware } from "../middlewares/adminAuthMiddleware.js"
+
+
+const showRouter = Router()
+
+
+showRouter.get("/now-playing", adminAuthMiddleware, getNowPlayingMovies)
+showRouter.post("/add", adminAuthMiddleware, addShow)
+
+
+export default showRouter
+```
+
+
+
+<br/><br/>

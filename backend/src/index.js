@@ -7,6 +7,7 @@ import 'dotenv/config'
 import connectDB from './configs/db.js'
 import userRouter from './routes/user.js'
 import showRouter from './routes/showRoutes.js'
+import adminRouter from "./routes/admin.js";
 
 
 const app = express()
@@ -24,9 +25,9 @@ app.get("/", (req, res) => {
     res.send("Server is LIVE")
 })
 
-
+app.use("/api/v1/admin", adminRouter)   // admin route
 app.use("/api/v1/user", userRouter)     // user route
-app.use("/api/show", showRouter)        // show route
+app.use("/api/v1/show", showRouter)        // show route
 
 
 

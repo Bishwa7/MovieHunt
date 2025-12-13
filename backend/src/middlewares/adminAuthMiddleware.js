@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import adminModel from "../models/admin.js";
-import { JWT_SECRET_ADMIN } from "../config/config.js";
+import { JWT_SECRET_ADMIN } from "../configs/adminJWT.js";
 
 
 

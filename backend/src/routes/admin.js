@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 
 import jwt from "jsonwebtoken"
 import { JWT_SECRET_ADMIN } from "../configs/adminJWT.js";
-import { adminModel } from "../models/admin.js";
+import adminModel from "../models/admin.js";
 
 
 

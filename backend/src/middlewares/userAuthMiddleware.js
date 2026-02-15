@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import { JWT_SECRET_USER } from "../config/config.js"
+import { JWT_SECRET_USER } from "../configs/userJWT.js"
 
 
 

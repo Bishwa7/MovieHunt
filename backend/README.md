@@ -1355,3 +1355,260 @@ export default showRouter
 
 
 <br/><br/><br/>
+
+
+
+
+## Step 7 - 
+- added booking DB Model
+- created booking controller functions (bookingController.js)
+- added bookingRoutes.js
+
+<br/>
+
+
+- added booking DB Model
+
+Booking.js
+
+```javascript
+import mongoose, { Schema } from "mongoose"
+
+
+const bookingSchema = new Schema({
+    user: {type: String, required: true, ref: 'User'},
+    show: {type: String, required: true, ref: 'Show'},
+    amount: {type: Number, required: true},
+    bookedSeats: {type: Array, required: true},
+    isPaid: {type: Boolean, default: false},
+    paymentLink: {type: String}
+},{timestamps: true})
+
+
+export const bookingModel = model("Booking", bookingSchema)
+```
+
+
+<br/>
+
+
+- created booking controller functions (bookingController.js)
+
+bookingController.js
+
+```javascript
+import { bookingModel } from "../models/Booking.js";
+import { showModel } from "../models/Show.js"
+
+
+
+const checkSeatsAvailabe = async (showId, selectedSeats) => {
+
+    try{
+        const showData = await showModel.findById(showId)
+
+        if(!showData)
+        {
+            return false;
+        }
+
+        const occupiedSeats = showData.occupiedSeats;
+        const isAnySeatTaken = selectedSeats.some(seat => occupiedSeats[seat])
+
+        return !isAnySeatTaken;
+    }
+    catch(e)
+    {
+        console.error(e)
+
+        return false;
+
+    }
+}
+
+
+
+export const createBooking = async (req, res) => {
+    try{
+        const userId = req.userId
+        const {showId, selectedSeats} = req.body
+        const {origin} = req.headers
+
+
+        const isAvailable = await checkSeatsAvailabe(showId, selectedSeats)
+
+        if(!isAvailable)
+        {
+            return res.json({
+                success: false,
+                message: "Selected seats are not available"
+            })
+        }
+
+
+        const showData = await showModel.findById(showId).populate('movie')
+
+
+        // booking new
+        const booking = await bookingModel.create({
+            user: userId,
+            show: showId,
+            amaount: showData.showPrice * selectedSeats.length,
+            bookedSeats: selectedSeats
+        })
+
+
+        selectedSeats.map((seat) => {
+            showData.occupiedSeats[seat] = userId;
+        })
+
+        showData.markModified('occupiedSeats');
+
+
+
+        await showData.save()
+
+
+
+        //payment logic
+        
+        //payment logic 
+
+
+
+        res.json({
+            success: true,
+            message: "Booking successful"
+        })
+
+    }
+    catch(e)
+    {
+        console.error(e)
+
+        res.json({
+            success: false,
+            message: e.message
+        })
+
+
+    }
+}
+
+
+
+
+
+
+export const getOccupiedSeats = async (req, res) => {
+
+    try{
+        const {showId} = req.params;
+        const showData = await showModel.findById(showId)
+
+        const occupiedSeats = Object.keys(showData.occupiedSeats)
+
+
+        res.json({
+            success: true,
+            occupiedSeats
+        })
+
+    }
+    catch(e)
+    {
+        console.error(e)
+
+        res.json({
+            success: false,
+            message: e.message
+        })
+    }
+}
+```
+
+
+<br/>
+
+
+- added bookingRoutes.js
+
+routes/bookingRoutes.js
+
+```javascript
+import express, { Router } from "express"
+import { createBooking, getOccupiedSeats } from "../controllers/bookingController.js";
+import { userAuthMiddleware } from "../middlewares/userAuthMiddleware.js";
+
+const bookingRouter = Router()
+
+
+bookingRouter.post("/create", userAuthMiddleware ,createBooking)
+
+bookingRouter.get("/seats/:showId", getOccupiedSeats)
+
+
+
+export default bookingRouter;
+```
+
+
+index.js
+
+```javascript
+import dotenv from "dotenv";
+dotenv.config();
+
+import express from 'express'
+import cors from 'cors'
+import 'dotenv/config'
+import connectDB from './configs/db.js'
+import userRouter from './routes/user.js'
+import showRouter from './routes/showRoutes.js'
+import adminRouter from "./routes/admin.js";
+import bookingRouter from "./routes/bookingRoutes.js";
+
+
+const app = express()
+const port = 3000
+
+
+// Middleware
+app.use(express.json())
+app.use(cors())
+
+
+
+// API Routes
+app.get("/", (req, res) => {
+    res.send("Server is LIVE")
+})
+
+app.use("/api/v1/admin", adminRouter)   // admin route
+app.use("/api/v1/user", userRouter)     // user route
+app.use("/api/v1/show", showRouter)        // show route
+app.use("/api/v1/booking", bookingRouter)
+
+
+
+async function main()
+{
+    await connectDB()
+
+    app.listen(port, () => {
+        console.log(`Servr listening at http://localhost:${port}`)
+    })
+}
+
+
+main().catch(err => console.log(err))
+```
+
+
+
+<br/><br/><br/>
+
+
+
+
+

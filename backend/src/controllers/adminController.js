@@ -70,7 +70,7 @@ export const getAllBookings = async (req, res) => {
 
     try{
         const bookings = await bookingModel.find({}).populate('user').populate({
-            path: "shows",
+            path: "show",
             populate: {path: "movie"}
         }).sort({createdAt: -1})
 

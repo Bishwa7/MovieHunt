@@ -135,7 +135,7 @@ export const addShow = async (req, res) => {
         
         res.json({
             success: false,
-            message: err.message,
+            message: e.message,
             message2: "error in addShow to db controller function"
         })
     }
@@ -196,7 +196,7 @@ export const getShowOne = async (req, res) => {
         const dateTime = {}
 
         shows.forEach((show) => {
-            const data = show.showDateTime.toISOString().split("T")[0]
+            const date = show.showDateTime.toISOString().split("T")[0]
 
             if(!dateTime[date])
             {
@@ -227,7 +227,7 @@ export const getShowOne = async (req, res) => {
 
         res.json({
             success: false,
-            message: err.message,
+            message: e.message,
             message2: "error in getShowOne (getting one show from db) db controller function"
         })
     }

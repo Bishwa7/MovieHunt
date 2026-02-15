@@ -39,7 +39,7 @@ userRouter.post("/signup", async (req, res) => {
     }
 
 
-    const {email, userName, password} = req.body;
+    const {email, userName, password} = parsedData.data;
     
     try{
         const hashedPassword = await bcrypt.hash(password, 5)

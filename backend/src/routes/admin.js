@@ -40,7 +40,7 @@ adminRouter.post("/signup", async (req, res) => {
     }
 
 
-    const {email, adminName, password} = req.body;
+    const {email, adminName, password} = parsedData.data;
     
     try{
         const hashedPassword = await bcrypt.hash(password, 5)

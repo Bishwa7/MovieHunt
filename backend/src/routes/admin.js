@@ -10,7 +10,7 @@ import jwt from "jsonwebtoken"
 import { JWT_SECRET_ADMIN } from "../configs/adminJWT.js";
 import adminModel from "../models/admin.js";
 import { adminAuthMiddleware } from "../middlewares/adminAuthMiddleware.js";
-import { getAllBookings, getAllShows, getDashboardData } from "../controllers/adminController.js";
+import { getAllBookings, getAllShows, getDashboardData, isAdmin } from "../controllers/adminController.js";
 
 
 
@@ -118,7 +118,7 @@ adminRouter.post("/signin", async (req, res) => {
 })
 
 
-
+adminRouter.get("/is-admin", adminAuthMiddleware, isAdmin)
 adminRouter.get("/dashboard", adminAuthMiddleware, getDashboardData)
 adminRouter.get("/all-shows", adminAuthMiddleware, getAllShows)
 adminRouter.get("/all-bookings", adminAuthMiddleware, getAllBookings)

@@ -4,6 +4,16 @@ import { userModel } from "../models/User.js"
 
 
 
+
+// APi to check if user is admin
+export const isAdmin = async (req, res) => {
+
+    res.json({success: true, isAdmin: true})
+}
+
+
+
+
 export const getDashboardData = async (req, res) => {
 
     try{

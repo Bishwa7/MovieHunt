@@ -2079,3 +2079,40 @@ userRouter.get("favourites", getFavourite)
 
 
 
+## Step 10 - (this step was needed otherwise anyuser was able to login as admin using fake adminToken)
+- added controller function and route to check if the user is admin or not 
+
+
+adminController.js
+
+```javascript
+
+// APi to check if user is admin
+export const isAdmin = async (req, res) => {
+
+    res.json({success: true, isAdmin: true})
+}
+
+```
+
+<br/>
+
+
+routes/admin.js
+
+```javascript
+
+import { isAdmin } from "../controllers/adminController.js";
+
+
+adminRouter.get("/is-admin", adminAuthMiddleware, isAdmin)
+```
+
+
+
+
+<br/><br/><br/>
+
+
+
+

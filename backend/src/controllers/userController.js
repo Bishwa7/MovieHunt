@@ -1,5 +1,5 @@
-import { bookingModel } from "../models/Booking";
-import { userModel } from "../models/User";
+import { bookingModel } from "../models/Booking.js";
+import { userModel } from "../models/User.js";
 
 
 

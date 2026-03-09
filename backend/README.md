@@ -1862,8 +1862,10 @@ export default adminRouter;
 
 
 ## Step 9 -
-- added userController.js functions (getUserBookings, addFavourite)
 - modified user.js DB model to add favourite field
+- added userController.js functions (getUserBookings, updateFavourite, getFavourite)
+- created userRouter (/bookings, /update-favourite, /favourites)
+
 
 
 <br/>
@@ -1897,7 +1899,7 @@ export const userModel = model("User", userSchema)
 <br/>
 
 
-- added userController.js functions (getUserBookings, addFavourite)
+- added userController.js functions (getUserBookings, updateFavourite, getFavourite)
 
 
 userController.js
@@ -1942,7 +1944,7 @@ export const getUserBookings = async (req, res) => {
 
 
 
-export const addFavourite = async (req, res) => {
+export const updateFavourite = async (req, res) => {
 
     try{
         const {movieId} = req.body;
@@ -1968,15 +1970,30 @@ export const addFavourite = async (req, res) => {
 
         // await user.save();
 
+
+        const user = await userModel.findOne({ _id: userId, favourites: movieId });
+
+        if (user) {
+            await userModel.updateOne(
+                { _id: userId },
+                { $pull: { favourites: movieId } }
+            );
+
+            return res.json({
+                success: true,
+                message: "Favourite removed successfully"
+            });
+        }
+
         const result = await userModel.updateOne(
             { _id: userId },
             { $addToSet: { favourites: movieId } }
         );
 
 
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ message: "User not found" });
-        }
+        // if (result.matchedCount === 0) {
+        //     return res.status(404).json({ message: "User not found" });
+        // }
 
 
         res.json({
@@ -1995,10 +2012,64 @@ export const addFavourite = async (req, res) => {
         })
     }
 }
+
+
+
+
+
+
+
+export const getFavourite = async (req, res) => {
+
+    try{
+        const userId = req.userId;
+
+        const favourites = await userModel.findById(userId).populate("favourites");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            movies: favourites
+        });
+
+    }
+    catch(e)
+    {
+        console.error(e)
+
+        res.json({
+            success: false,
+            message: e.message
+        })
+    }
+}
 ```
 
 
+<br/>
 
+
+- created userRouter (/bookings, /update-favourite, /favourites)
+
+
+routes/user.js
+
+
+```javascript
+
+import { getFavourite, getUserBookings, updateFavourite } from "../controllers/userController.js";
+
+
+userRouter.get("/bookings", getUserBookings)
+userRouter.post("/update-favourite", updateFavourite)
+userRouter.get("favourites", getFavourite)
+```
 
 
 

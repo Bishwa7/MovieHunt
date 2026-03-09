@@ -8,6 +8,7 @@ import {userModel} from "../models/User.js"
 
 import jwt from "jsonwebtoken"
 import { JWT_SECRET_USER } from "../configs/userJWT.js";
+import { getFavourite, getUserBookings, updateFavourite } from "../controllers/userController.js";
 
 
 
@@ -112,6 +113,11 @@ userRouter.post("/signin", async (req, res) => {
 
 
 })
+
+
+userRouter.get("/bookings", getUserBookings)
+userRouter.post("/update-favourite", updateFavourite)
+userRouter.get("favourites", getFavourite)
 
 
 
